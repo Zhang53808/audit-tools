@@ -1,136 +1,138 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-第二步：根据填好的分组Excel批量重命名
+"""根据凭证分组清单 CSV 批量重命名原始扫描件。"""
 
-流程：
-1. 先用 process_raw_scans.py 生成分组清单CSV
-2. 在Excel里填好凭证字、凭证号、日期、科目
-3. 运行本脚本，自动重命名
+import csv
+import os
+import re
+import shutil
+from pathlib import Path
 
-import os, csv, shutil, re
 
-print("=" * 50)
-print("第二步：根据分组清单重命名")
-print("=" * 50)
+SUPPORTED_EXTS = {".jpg", ".jpeg", ".png", ".heic", ".pdf"}
 
-# 选文件夹
-print("\n请把照片文件夹（里面要有填好的CSV）拖进终端，回车：")
-folder = input().strip().strip("'\"")
 
-if not os.path.isdir(folder):
-    print("找不到文件夹")
-    exit(1)
+def sanitize_filename(value):
+    value = re.sub(r'[\\/:*?"<>|]', "_", value)
+    return re.sub(r"\s+", " ", value).strip()
 
-# 找CSV
-csv_files = [f for f in os.listdir(folder) if f.endswith('.csv')]
-if not csv_files:
-    print("文件夹内找不到CSV，请先跑 process_raw_scans.py")
-    exit(1)
 
-csv_path = os.path.join(folder, csv_files[0])
-print(f"找到清单：{csv_files[0]}")
+def find_csv(folder):
+    preferred = folder / "凭证分组清单.csv"
+    if preferred.exists():
+        return preferred
+    csv_files = sorted(path for path in folder.iterdir() if path.suffix.lower() == ".csv")
+    return csv_files[0] if csv_files else None
 
-# 读CSV
-groups = []
-with open(csv_path, 'r', encoding='utf-8-sig') as f:
-    reader = csv.DictReader(f)
-    for row in reader:
-        t = row.get("凭证字(记/转/银/现)", "").strip()
-        n = row.get("凭证号", "").strip()
-        d = row.get("日期(日)", "").strip()
-        s = row.get("科目/摘要", "").strip()
-        c = row.get("文件数量", "0")
-        groups.append({
-            "type": t or "记",
-            "num": n,
-            "day": d,
-            "subject": s,
-            "count": int(c) if c.isdigit() else 0
-        })
 
-filled = sum(1 for g in groups if g["num"])
-print(f"共 {len(groups)} 组，已填凭证号：{filled} 组")
+def read_groups(csv_path):
+    groups = []
+    with csv_path.open("r", encoding="utf-8-sig", newline="") as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            count_text = (row.get("文件数量") or "0").strip()
+            groups.append(
+                {
+                    "type": (row.get("凭证字") or "记").strip() or "记",
+                    "num": (row.get("凭证号") or "").strip(),
+                    "day": (row.get("日期(日)") or "").strip(),
+                    "subject": (row.get("科目/摘要") or "").strip(),
+                    "count": int(count_text) if count_text.isdigit() else 0,
+                }
+            )
+    return groups
 
-# 客户名和年份
-company = input("客户简称？（默认 A司）：").strip() or "A司"
-year = input("年份？（默认 2025）：").strip() or "2025"
 
-# 读文件列表
-files = sorted([f for f in os.listdir(folder)
-               if f.lower().endswith(('.jpg','.jpeg','.png','.heic','.pdf'))
-               and not f.startswith('.')
-               and not f.endswith('.csv')])
+def extract_month(filename):
+    match = re.search(r"(\d{4})[-_.](\d{1,2})[-_.](\d{1,2})", filename)
+    if match:
+        return match.group(2).zfill(2), match.group(3).zfill(2)
+    match = re.search(r"(\d{1,2})月(\d{1,2})日?", filename)
+    if match:
+        return match.group(1).zfill(2), match.group(2).zfill(2)
+    return "01", "00"
 
-# 分隔关键词
-keyword = input("分隔关键词？（默认 finger）：").strip() or "finger"
 
-# 开始处理
-backup_dir = os.path.join(folder, "原文件备份")
-os.makedirs(backup_dir, exist_ok=True)
+def unique_path(path):
+    if not path.exists():
+        return path
+    stem = path.stem
+    suffix = path.suffix
+    index = 2
+    while True:
+        candidate = path.with_name(f"{stem}_{index}{suffix}")
+        if not candidate.exists():
+            return candidate
+        index += 1
 
-group_idx = 0
-sub_idx = 0
-total = 0
-skipped = 0
 
-for f in files:
-    fp = os.path.join(folder, f)
-    sz = os.path.getsize(fp)
-    
-    # 跳过分隔文件
-    if keyword.lower() in f.lower() or sz < 50 * 1024:
-        print(f"  跳过（分隔）：{f}")
-        skipped += 1
-        continue
-    
-    # 找对应组
-    while group_idx < len(groups):
-        g = groups[group_idx]
-        if g["num"]:
-            break
-        group_idx += 1
-    
-    if group_idx >= len(groups):
-        # 没组了，剩下的文件跳过
-        print(f"  跳过（无对应组）：{f}")
-        skipped += 1
-        continue
-    
-    g = groups[group_idx]
-    
-    # 从文件名解析月份
-    month = "01"
-    m = re.search(r'(\d{4})-(\d{2})-(\d{2})', f)
-    if m:
-        month = m.group(2)
-    
-    day = g["day"].zfill(2) if g["day"] else (m.group(3) if m else "00")
-    
-    sub_idx += 1
-    
-    # 组内多张，加序号
-    suffix = f"_{sub_idx}" if g["count"] > 1 else ""
-    
-    new_name = f"{company}{year}{month}{day}{g['type']}{g['num']}{suffix}"
-    ext = os.path.splitext(f)[1]
-    dst = os.path.join(folder, new_name + ext)
-    
-    # 防重名
-    n = 1
-    while os.path.exists(dst):
-        n += 1
-        dst = os.path.join(folder, f"{new_name}_{n}{ext}")
-    
-    shutil.copy2(fp, os.path.join(backup_dir, f))
-    os.rename(fp, dst)
-    total += 1
-    print(f"  {f[:25]:25s} -> {os.path.basename(dst)}")
-    
-    # 判断是否切换到下一组
-    if sub_idx >= g["count"]:
-        group_idx += 1
-        sub_idx = 0
+def main():
+    print("请把扫描件文件夹拖进终端，文件夹内应有填好的 CSV 清单：")
+    folder = Path(input().strip().strip("'\""))
+    if not folder.is_dir():
+        raise SystemExit(f"找不到文件夹：{folder}")
 
-print(f"\n完成！重命名 {total} 个，跳过 {skipped} 个（分隔文件+无对应组）")
-print(f"原文件备份在：{backup_dir}")
+    csv_path = find_csv(folder)
+    if not csv_path:
+        raise SystemExit("文件夹内找不到 CSV，请先运行 process_raw_scans.py。")
+
+    groups = read_groups(csv_path)
+    filled = sum(1 for group in groups if group["num"])
+    print(f"找到清单：{csv_path.name}。共 {len(groups)} 组，已填写凭证号 {filled} 组。")
+
+    company = input("客户简称 [默认 A公司]：").strip() or "A公司"
+    year = input("年份 [默认 2025]：").strip() or "2025"
+    keyword = input("分隔文件关键字 [默认 finger]：").strip() or "finger"
+
+    files = sorted(
+        path
+        for path in folder.iterdir()
+        if path.is_file() and path.suffix.lower() in SUPPORTED_EXTS and not path.name.startswith(".")
+    )
+
+    backup_dir = folder / "原文件备份"
+    backup_dir.mkdir(exist_ok=True)
+
+    group_idx = 0
+    sub_idx = 0
+    renamed = 0
+    skipped = 0
+
+    for src in files:
+        if keyword.lower() in src.name.lower() or src.stat().st_size < 50 * 1024:
+            print(f"  跳过分隔文件：{src.name}")
+            skipped += 1
+            continue
+
+        while group_idx < len(groups) and not groups[group_idx]["num"]:
+            group_idx += 1
+
+        if group_idx >= len(groups):
+            print(f"  跳过，无对应清单组：{src.name}")
+            skipped += 1
+            continue
+
+        group = groups[group_idx]
+        month, filename_day = extract_month(src.name)
+        day = group["day"].zfill(2) if group["day"] else filename_day
+        sub_idx += 1
+        suffix = f"_{sub_idx}" if group["count"] > 1 else ""
+        subject = f"_{sanitize_filename(group['subject'])}" if group["subject"] else ""
+        new_name = f"{company}{year}{month}{day}{group['type']}{group['num']}{suffix}{subject}{src.suffix.lower()}"
+        dst = unique_path(folder / sanitize_filename(new_name))
+
+        shutil.copy2(src, backup_dir / src.name)
+        os.rename(src, dst)
+        renamed += 1
+        print(f"  {src.name} -> {dst.name}")
+
+        if sub_idx >= group["count"]:
+            group_idx += 1
+            sub_idx = 0
+
+    print(f"完成：重命名 {renamed} 个，跳过 {skipped} 个。")
+    print(f"原文件备份：{backup_dir}")
+
+
+if __name__ == "__main__":
+    main()
