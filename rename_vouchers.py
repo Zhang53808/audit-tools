@@ -3,8 +3,7 @@
 """
 凭证PDF批量重命名脚本
 用法：在终端里运行 python3 ~/Desktop/rename_vouchers.py
-数据全程在本地处理，不会上传到任何地方
-"""
+
 
 import os, re, csv, shutil
 from datetime import datetime, timedelta
