@@ -1,0 +1,5 @@
+.DS_Store
+*.bak
+客户配置/
+__pycache__/
+*.pyc
