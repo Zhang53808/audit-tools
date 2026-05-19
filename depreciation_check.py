@@ -3,11 +3,6 @@
 """
 固定资产折旧测算脚本 —— 通用版
 
-每换一个客户，第一次运行时会自动识别列名。
-识别不对的话，把表头发给我，我告诉你配置文件怎么写。
-确认后保存配置，下次同客户直接调用。
-"""
-
 import openpyxl, json, os
 from datetime import datetime
 from collections import defaultdict
