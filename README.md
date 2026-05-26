@@ -151,8 +151,4 @@ python rename_from_csv.py
 - 客户数据 Excel → gitignore 拦截
 - `__pycache__/`、`.DS_Store` → gitignore 拦截
 
----
-
-## 联系方式
-
-🦞 大傻虾
+--
