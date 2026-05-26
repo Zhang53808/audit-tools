@@ -41,18 +41,18 @@ python address_verification.py 名单.xlsx
 ## 关联方识别
 
 ```bash
-# 演示（内置模拟案例模拟数据）
+# 演示（内置模拟数据）
 python related_party_check.py
 
-# 企查查导出数据
-python run_qichacha.py 企业名单.xlsx -o 结果.xlsx
+# 从Excel加载企业名单
+python related_party_check.py 输入.xlsx -o 结果.xlsx
 ```
 
 12维度交叉比对：股权穿透、共同股东、实际控制人、高管重叠、法人交叉、法人变更、同址经营、联系方式共用、变更时间窗口、名称相似、参保异常、人员关联
 
 输出：`关联方核查结果.xlsx`（12维矩阵 + 证据文字 + 三色风险等级）
 
-详细说明见 `SKILL-related-party-check.md` 和 `关联方核查结果-阅读指南.md`
+详细说明见 `SKILL-related-party-check.md`
 
 ---
 
