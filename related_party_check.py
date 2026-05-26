@@ -2,7 +2,7 @@
 """
 关联方识别 - 12维度交叉比对引擎
 =================================
-逆向狗(nigo)方法论复现 + 卓朗科技案复现
+逆向狗(nigo)方法论复现 + 模拟案例复现
 
 用法：
     python related_party_check.py                         # 使用内置模拟数据
@@ -109,29 +109,29 @@ def _extract_names(items: List[str]) -> set:
 
 
 # ============================================================
-# 模拟数据：卓朗科技案 (8家隐性关联方 + 1个干扰项)
+# 模拟数据：模拟案例 (8家隐性关联方 + 1个干扰项)
 # ============================================================
 def _build_fixture() -> Tuple[dict, List[dict]]:
     """
-    构建卓朗科技案模拟数据集。
+    构建模拟案例模拟数据集。
 
     返回: (审计方数据, [目标企业列表])
     """
     audit = {
-        "name": "卓朗科技股份有限公司",
-        "shareholders": ["张某某(30%)", "李某某(25%)", "天津卓朗控股有限公司(45%)"],
+        "name": "辰星科技股份有限公司",
+        "shareholders": ["张某某(30%)", "李某某(25%)", "辰星控股有限公司(45%)"],
         "actual_controller": "张某某",
         "executives": ["张某某(董事长)", "王某某(总经理)", "赵某(监事)"],
         "legal_rep": "张某某",
         "address": "天津市滨海新区经济技术开发区信环西路20号",
         "phone": "022-5988****",
-        "email": "info@zhuolang.com",
+        "email": "info@demo-tech.example.com",
     }
 
     targets = [
         {
             # 1. D08信号: 电话138****5678 = 审计方监事赵某的个人号码
-            "name": "温岭乾民贸易有限公司",
+            "name": "星海贸易有限公司",
             "shareholders": ["王某(60%)", "李某(40%)"],
             "actual_controller": "王某",
             "executives": ["王某(执行董事)", "李某(经理)", "赵某(监事)"],
@@ -139,14 +139,14 @@ def _build_fixture() -> Tuple[dict, List[dict]]:
             "historical_legal_reps": [],
             "address": "天津市滨海新区塘沽街道新港路100号",
             "phone": "138****5678",
-            "email": "wenling@qianmin-trade.cn",
+            "email": "company1@demo-trade.example.com",
             "change_dates": [],
             "insured_employees": 5,
             "transaction_amount": 5000000,
         },
         {
             # 2. D02+D04信号: 股东梁某也在#3 + 高管王某某与审计方重叠
-            "name": "天津事达科技有限公司",
+            "name": "锦程科技有限公司",
             "shareholders": ["梁某(50%)", "陈某(50%)"],
             "actual_controller": "梁某",
             "executives": ["梁某(执行董事)", "王某某(经理)"],
@@ -154,14 +154,14 @@ def _build_fixture() -> Tuple[dict, List[dict]]:
             "historical_legal_reps": [],
             "address": "天津市南开区鞍山西道200号",
             "phone": "022-8790****",
-            "email": "shida@tj-shida.cn",
+            "email": "company2@demo-abc.example.com",
             "change_dates": [],
             "insured_employees": 8,
             "transaction_amount": 8500000,
         },
         {
             # 3. D02信号: 股东梁某与#2重叠
-            "name": "事达信息咨询有限公司",
+            "name": "锦程信息咨询有限公司",
             "shareholders": ["梁某(40%)", "张某(30%)", "赵某(30%)"],
             "actual_controller": "梁某",
             "executives": ["梁某(执行董事)", "张某(经理)"],
@@ -169,14 +169,14 @@ def _build_fixture() -> Tuple[dict, List[dict]]:
             "historical_legal_reps": [],
             "address": "天津市南开区鞍山西道210号",
             "phone": "022-8791****",
-            "email": "shida_info@tj-shida.cn",
+            "email": "company2_info@demo-abc.example.com",
             "change_dates": [],
             "insured_employees": 3,
             "transaction_amount": 3200000,
         },
         {
-            # 4. D10+D07信号: 名字含"卓" + 地址靠近审计方
-            "name": "滨海新区卓创商贸有限公司",
+            # 4. D10+D07信号: 名字含"辰" + 地址靠近审计方
+            "name": "辰创商贸有限公司",
             "shareholders": ["刘某(100%)"],
             "actual_controller": "刘某",
             "executives": ["刘某(执行董事)", "孙某(监事)"],
@@ -184,14 +184,14 @@ def _build_fixture() -> Tuple[dict, List[dict]]:
             "historical_legal_reps": [],
             "address": "天津市滨海新区经济技术开发区信环西路18号",
             "phone": "022-5900****",
-            "email": "zhuochuang@bh-zhuoc.cn",
+            "email": "company4@demo-zhuoc.example.com",
             "change_dates": [],
             "insured_employees": 2,
             "transaction_amount": 1800000,
         },
         {
-            # 5. D10信号: 名字含"朗" + D08信号: 电话与#1相同
-            "name": "天津朗信科技有限公司",
+            # 5. D10信号: 名字含"星" + D08信号: 电话与#1相同
+            "name": "星辉科技有限公司",
             "shareholders": ["周某(70%)", "吴某(30%)"],
             "actual_controller": "周某",
             "executives": ["周某(执行董事)", "吴某(监事)"],
@@ -199,14 +199,14 @@ def _build_fixture() -> Tuple[dict, List[dict]]:
             "historical_legal_reps": [],
             "address": "天津市西青区中北镇星光路50号",
             "phone": "138****5678",
-            "email": "langxin@langxin-tech.cn",
+            "email": "company5@demo-tech.example.com",
             "change_dates": [],
             "insured_employees": 4,
             "transaction_amount": 4200000,
         },
         {
-            # 6. D10+D06信号: 名字含"乾民" + 前法人赵某=审计方监事
-            "name": "乾民信息技术有限公司",
+            # 6. D10+D06信号: 名字含"汇鑫" + 前法人赵某=审计方监事
+            "name": "汇鑫信息技术有限公司",
             "shareholders": ["陈某(55%)", "黄某(45%)"],
             "actual_controller": "陈某",
             "executives": ["陈某(执行董事)", "黄某(经理)"],
@@ -214,14 +214,14 @@ def _build_fixture() -> Tuple[dict, List[dict]]:
             "historical_legal_reps": ["赵某"],   # ← 关键：前法人
             "address": "天津市河东区十一经路80号",
             "phone": "022-2410****",
-            "email": "qianmin@qm-info.cn",
+            "email": "company6@demo-info.example.com",
             "change_dates": [],
             "insured_employees": 1,
             "transaction_amount": 1200000,
         },
         {
             # 7. D03信号: 实际控制人张某某 = 审计方大股东/实际控制人
-            "name": "北辰区明锐达科技有限公司",
+            "name": "北辰区锐达科技有限公司",
             "shareholders": ["张某某(80%)", "林某(20%)"],
             "actual_controller": "张某某",
             "executives": ["张某某(执行董事)", "林某(监事)"],
@@ -229,37 +229,37 @@ def _build_fixture() -> Tuple[dict, List[dict]]:
             "historical_legal_reps": [],
             "address": "天津市北辰区京津公路300号",
             "phone": "022-2680****",
-            "email": "mingruida@mingruida-bc.cn",
+            "email": "company7@demo-bc.example.com",
             "change_dates": [],
             "insured_employees": 0,
             "transaction_amount": 9500000,
         },
         {
-            # 8. D10+D01信号: 名字含"卓" + 审计方通过控股公司间接持股
-            "name": "天津卓研咨询有限公司",
-            "shareholders": ["天津卓朗控股有限公司(51%)", "侯某(49%)"],
+            # 8. D10+D01信号: 名字含"辰" + 审计方通过控股公司间接持股
+            "name": "辰研咨询有限公司",
+            "shareholders": ["辰星控股有限公司(51%)", "侯某(49%)"],
             "actual_controller": "张某某",
             "executives": ["侯某(执行董事)", "侯某(经理)"],
             "legal_rep": "侯某",
             "historical_legal_reps": [],
             "address": "天津市和平区南京路100号",
             "phone": "022-2330****",
-            "email": "zhuoyan@zhuoyan-tj.cn",
+            "email": "company8@demo-tj.example.com",
             "change_dates": [],
             "insured_employees": 6,
             "transaction_amount": 7200000,
         },
         {
-            # 9. 干扰项：万科 — 应12维度全✗
-            "name": "万科企业股份有限公司",
+            # 9. 干扰项：无关企业 — 应12维度全✗
+            "name": "通用企业股份有限公司",
             "shareholders": ["深圳市地铁集团有限公司(27.91%)", "香港中央结算有限公司(7.34%)", "郁某(0.08%)"],
             "actual_controller": "深圳市地铁集团有限公司",
             "executives": ["郁某(董事长)", "祝某(总裁)", "韩某(执行副总裁)"],
             "legal_rep": "郁某",
             "historical_legal_reps": [],
-            "address": "深圳市盐田区大梅沙环梅路33号万科中心",
+            "address": "深圳市盐田区大梅沙环梅路33号集团总部",
             "phone": "0755-2560****",
-            "email": "ir@vanke.com",
+            "email": "ir@demo-corp.example.com",
             "change_dates": [],
             "insured_employees": 10000,
             "transaction_amount": 500000000,
@@ -919,11 +919,11 @@ if __name__ == "__main__":
     else:
         if audit is None:
             audit, targets = _build_fixture()
-            print("📦 使用内置模拟数据（卓朗科技案）")
+            print("📦 使用内置模拟数据（模拟案例）")
         else:
             # 有审计方但没有目标企业文件 — 也降级到模拟数据
             _, targets = _build_fixture()
-            print("📦 使用内置模拟数据（卓朗科技案）")
+            print("📦 使用内置模拟数据（模拟案例）")
 
     if not targets:
         print("❌ 未找到任何待核查企业，退出。")

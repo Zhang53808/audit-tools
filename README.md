@@ -42,11 +42,11 @@ python address_verification.py 名单.xlsx
 ## 关联方识别
 
 ```bash
-# 演示（内置卓朗科技案模拟数据）
+# 演示（内置模拟案例模拟数据）
 python related_party_check.py
 
 # 企查查导出数据
-python run_qichacha.py 金控物产.xlsx -o 结果.xlsx
+python run_qichacha.py 企业名单.xlsx -o 结果.xlsx
 ```
 
 12维度交叉比对：股权穿透、共同股东、实际控制人、高管重叠、法人交叉、法人变更、同址经营、联系方式共用、变更时间窗口、名称相似、参保异常、人员关联
