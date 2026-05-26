@@ -1,4 +1,4 @@
-# 🦞 审计自动化工具包
+#  审计自动化工具包
 
 > 逆向狗(nigo)方法论复现 + 年审现场实用小工具
 
@@ -151,8 +151,4 @@ python rename_from_csv.py
 - 客户数据 Excel → gitignore 拦截
 - `__pycache__/`、`.DS_Store` → gitignore 拦截
 
----
-
-## 联系方式
-
-🦞 大傻虾
+--
