@@ -1,0 +1,31 @@
+# API Keys - 切勿提交
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# 虚拟环境
+venv/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# 测试/临时文件
+test_*.xlsx
+*_test.xlsx
+
+# 用户数据（客户名单、核查结果等不得上传）
+*_核查结果.xlsx
+*_关联方核查结果.xlsx
+金控物产.xlsx
+金控物产_*.xlsx
+
+# 审计自动化工具.md 里提到 Key 存在（无真实Key值，但建议复审）
+# 审计自动化工具.md  — 手动确认不包含真实Key后再提交
