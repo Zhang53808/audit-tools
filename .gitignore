@@ -17,7 +17,11 @@ venv/
 # macOS
 .DS_Store
 
-# 测试/临时文件
+# 客户配置
+客户配置/
+
+# 备份/临时文件
+*.bak
 test_*.xlsx
 *_test.xlsx
 
@@ -26,6 +30,3 @@ test_*.xlsx
 *_关联方核查结果.xlsx
 金控物产.xlsx
 金控物产_*.xlsx
-
-# 审计自动化工具.md 里提到 Key 存在（无真实Key值，但建议复审）
-# 审计自动化工具.md  — 手动确认不包含真实Key后再提交
