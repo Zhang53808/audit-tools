@@ -30,3 +30,6 @@ test_*.xlsx
 *_关联方核查结果.xlsx
 金控物产.xlsx
 金控物产_*.xlsx
+
+# 本地参考笔记（不提交GitHub）
+审计自动化工具.md
