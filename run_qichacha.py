@@ -79,8 +79,8 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="企查查数据 → 关联方识别")
     parser.add_argument("filepath", help="企查查导出的Excel文件路径")
-    parser.add_argument("audit_name", nargs="?", default="广州金控物产有限公司",
-                        help="被审计单位名称（默认: 广州金控物产有限公司）")
+    parser.add_argument("audit_name", nargs="?", default="A司",
+                        help="被审计单位名称（默认: A司）")
     parser.add_argument("-o", "--output", default=None, help="输出Excel路径")
     args = parser.parse_args()
 
