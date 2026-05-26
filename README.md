@@ -10,7 +10,6 @@
 |:-----|:-----|:-----|
 | 🆕 函证地址 | `address_verification.py` | 三层过滤核查发函地址（文本相似度 → 地图距离 → AI搜索佐证） |
 | 🆕 关联方 | `related_party_check.py` | 12维度交叉比对识别隐性关联方 |
-| 🆕 关联方 | `run_qichacha.py` | 企查查导出数据 → 关联方引擎适配 |
 | 折旧 | `depreciation_check.py` | 固定资产折旧年审测算 |
 | 凭证 | `clean_vouchers.py` | 清洗凭证/明细类 Excel |
 | 凭证 | `rename_vouchers.py` | 已整理凭证 PDF 批量重命名 |
