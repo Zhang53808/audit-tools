@@ -5,6 +5,10 @@
 __pycache__/
 *.pyc
 *.pyo
+*.egg-info/
+*.whl
+dist/
+build/
 
 # 虚拟环境
 venv/
@@ -28,6 +32,8 @@ test_*.xlsx
 # 用户数据（客户名单、核查结果等不得上传）
 *_核查结果.xlsx
 *_关联方核查结果.xlsx
-
-# 本地参考笔记（不提交GitHub）
-审计自动化工具.md
+*_折旧年审结果.xlsx
+*_已清洗.xlsx
+凭证清单.csv
+凭证分组清单.csv
+原文件备份/

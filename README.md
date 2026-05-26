@@ -1,28 +1,90 @@
-#  审计自动化工具包
+# 审计自动化工具包
 
 > 逆向狗(nigo)方法论复现 + 年审现场实用小工具
 
 ---
 
+## 安装
+
+```bash
+pip install -e .
+```
+
+或手动安装依赖：
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## 统一 CLI
+
+```bash
+audit-tools --help
+
+# 函证地址核查
+audit-tools address-verify 名单.xlsx --map-key YOUR_KEY --llm-key YOUR_KEY
+
+# 关联方识别（演示模式）
+audit-tools related-party
+
+# 关联方识别（真实数据）
+audit-tools related-party 企业名单.xlsx -o 结果.xlsx
+
+# 折旧测算（非交互模式）
+audit-tools depreciation 固定资产.xlsx --year 2025 --method straight
+
+# 折旧测算（交互模式）
+audit-tools depreciation
+
+# 凭证清洗
+audit-tools vouchers clean 明细.xlsx
+
+# 凭证 PDF 重命名
+audit-tools vouchers rename 文件夹/ --company A公司 --year 2025 --dry-run
+
+# 扫描件分组
+audit-tools scans group 文件夹/
+
+# 扫描件重命名
+audit-tools scans rename 文件夹/ --company A公司 --year 2025 --dry-run
+```
+
+---
+
 ## 工具一览
 
-| 类别 | 脚本 | 用途 |
+| 类别 | 入口 | 用途 |
 |:-----|:-----|:-----|
-| 🆕 函证地址 | `address_verification.py` | 三层过滤核查发函地址（文本相似度 → 地图距离 → AI搜索佐证） |
-| 🆕 关联方 | `related_party_check.py` | 12维度交叉比对识别隐性关联方 |
-| 折旧 | `depreciation_check.py` | 固定资产折旧年审测算 |
-| 凭证 | `clean_vouchers.py` | 清洗凭证/明细类 Excel |
-| 凭证 | `rename_vouchers.py` | 已整理凭证 PDF 批量重命名 |
-| 扫描件 | `process_raw_scans.py` | 原始扫描件按分隔标记分组 |
-| 扫描件 | `rename_from_csv.py` | 根据分组清单重命名原始扫描件 |
+| 函证地址 | `audit-tools address-verify` | 三层过滤核查发函地址（文本相似度 → 地图距离 → AI搜索佐证） |
+| 关联方 | `audit-tools related-party` | 12维度交叉比对识别隐性关联方 |
+| 折旧 | `audit-tools depreciation` | 固定资产折旧年审测算 |
+| 凭证 | `audit-tools vouchers clean` | 清洗凭证/明细类 Excel |
+| 凭证 | `audit-tools vouchers rename` | 已整理凭证 PDF 批量重命名 |
+| 扫描件 | `audit-tools scans group` | 原始扫描件按分隔标记分组 |
+| 扫描件 | `audit-tools scans rename` | 根据分组清单重命名原始扫描件 |
+
+---
+
+## 也可以用原始脚本（向后兼容）
+
+```bash
+python address_verification.py 名单.xlsx
+python related_party_check.py
+python depreciation_check.py
+python clean_vouchers.py
+python rename_vouchers.py
+python process_raw_scans.py
+python rename_from_csv.py
+```
 
 ---
 
 ## 函证地址核查
 
 ```bash
-pip install pandas openpyxl thefuzz requests python-Levenshtein python-dotenv tqdm
-python address_verification.py 名单.xlsx
+audit-tools address-verify 名单.xlsx --map-key KEY --llm-key KEY
 ```
 
 输入：Excel（公司名称 / 发函地址 / 工商注册地址）
@@ -41,48 +103,44 @@ python address_verification.py 名单.xlsx
 ## 关联方识别
 
 ```bash
-# 演示（内置模拟案例模拟数据）
-python related_party_check.py
+# 演示（内置模拟案例）
+audit-tools related-party
 
-# 企查查导出数据
-python run_qichacha.py 企业名单.xlsx -o 结果.xlsx
+# 真实数据（从 Excel 加载企业名单）
+audit-tools related-party 客户名单.xlsx -o 关联方核查结果.xlsx
 ```
 
 12维度交叉比对：股权穿透、共同股东、实际控制人、高管重叠、法人交叉、法人变更、同址经营、联系方式共用、变更时间窗口、名称相似、参保异常、人员关联
 
 输出：`关联方核查结果.xlsx`（12维矩阵 + 证据文字 + 三色风险等级）
 
-详细说明见 `SKILL-related-party-check.md` 和 `关联方核查结果-阅读指南.md`
+详细说明见 `SKILL-related-party-check.md`
 
 ---
 
-## 函证地址核查 Skill
+## 固定资产折旧测算
 
 ```bash
-# 将 SKILL-address-verification.md 复制到 Claude Code skills 目录
-cp SKILL-address-verification.md ~/.claude/skills/address-verification/SKILL.md
+# 交互模式（原始工作流）
+audit-tools depreciation
+
+# 命令行模式
+audit-tools depreciation 固定资产.xlsx --year 2025 --method straight
 ```
 
-触发词：函证、地址核查、发函地址、verify address
-
----
-
-## 关联方识别 Skill
-
-```bash
-# 将 SKILL-related-party-check.md 复制到 Claude Code skills 目录
-cp SKILL-related-party-check.md ~/.claude/skills/related-party-check/SKILL.md
-```
-
-触发词：关联方、12维度、隐性关联、related party、客户供应商核查
+自动识别客户折旧表表头，支持直线法和月折旧率法。
 
 ---
 
 ## 测试
 
 ```bash
-python -m pytest test_address_verification.py -v   # 27 个用例
-python -m pytest test_related_party.py -v           # 36 个用例
+pip install -e ".[dev]"
+pytest tests/ -v                           # 全部 125 个用例
+pytest tests/test_common.py -v             # 公共模块
+pytest tests/test_depreciation.py -v       # 折旧测算
+pytest tests/test_address_verification.py -v
+pytest tests/test_related_party.py -v
 ```
 
 ---
@@ -100,46 +158,24 @@ DEEPSEEK_API_KEY=你的DeepSeek Key
 
 ---
 
-## 固定资产折旧测算
+## 项目结构
 
-```bash
-python depreciation_check.py
 ```
-
-自动识别客户折旧表表头，支持直线法和月折旧率法。
-
----
-
-## 凭证 Excel 清洗
-
-```bash
-python clean_vouchers.py
-```
-
-统一月份格式、清洗金额字段、删除空行/合计行。
-
----
-
-## 凭证 PDF 重命名
-
-```bash
-python rename_vouchers.py
-```
-
-从文件名识别月份/凭证号，统一命名格式：`客户简称+年月日+凭证字+凭证号.pdf`
-
----
-
-## 扫描件分组与重命名
-
-```bash
-# 第一步：生成分组清单
-python process_raw_scans.py
-
-# 在 CSV 中填写凭证信息
-
-# 第二步：批量重命名
-python rename_from_csv.py
+src/audit_tools/
+├── cli.py                    # 统一 CLI 入口
+├── common/                   # 公共模块
+│   ├── address.py            # 地址清洗 + 相似度
+│   ├── amount.py             # 金额/日期解析
+│   ├── excel_output.py       # Excel 三色输出
+│   ├── api.py                # API 重试/地理编码/LLM
+│   ├── logging.py            # 统一日志
+│   └── text.py               # 文件名处理
+├── address_verification/     # 函证地址核查
+├── related_party/            # 关联方识别
+├── depreciation/             # 折旧测算
+├── vouchers/                 # 凭证工具
+└── scans/                    # 扫描件工具
+tests/                        # 测试（125 用例）
 ```
 
 ---
@@ -148,6 +184,4 @@ python rename_from_csv.py
 
 - `.env`（含真实 Key）→ gitignore 拦截
 - 客户数据 Excel → gitignore 拦截
-- `__pycache__/`、`.DS_Store` → gitignore 拦截
-
---
+- `__pycache__/`、`*.egg-info/` → gitignore 拦截
