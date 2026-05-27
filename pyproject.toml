@@ -9,7 +9,7 @@ description = "审计自动化工具包 - 函证地址核查 / 关联方识别 /
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
-authors = [{ name = "nigo" }]
+authors = [{ name = "Zhang53808" }]
 keywords = ["audit", "accounting", "confirmation", "related-party", "depreciation"]
 classifiers = [
     "Development Status :: 4 - Beta",
